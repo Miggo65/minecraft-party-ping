@@ -17,6 +17,8 @@ import org.lwjgl.glfw.GLFW;
 import java.util.List;
 
 public class PingClientMod implements ClientModInitializer {
+    private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("mcping", "general"));
+
     private KeyBinding pingKey;
     private KeyBinding partyMenuKey;
 
@@ -35,14 +37,14 @@ public class PingClientMod implements ClientModInitializer {
                 "key.mcping.ping",
                 InputUtil.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_MIDDLE,
-            KeyBinding.Category.create(Identifier.of("mcping", "general"))
+            CATEGORY
         ));
 
         partyMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.mcping.party",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_P,
-            KeyBinding.Category.create(Identifier.of("mcping", "general"))
+            CATEGORY
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
