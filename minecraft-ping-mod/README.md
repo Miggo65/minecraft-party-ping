@@ -35,6 +35,18 @@ Optional mit explizitem JAR:
 ./install-mod.sh /pfad/zur/minecraft-ping-mod-0.1.0.jar
 ```
 
+### Windows (PowerShell)
+
+```powershell
+./install-mod.ps1
+```
+
+Optional mit explizitem JAR:
+
+```powershell
+./install-mod.ps1 -JarPath ".\\build\\libs\\minecraft-ping-mod-0.1.0.jar"
+```
+
 ## Config
 
 Beim ersten Start wird erzeugt:
