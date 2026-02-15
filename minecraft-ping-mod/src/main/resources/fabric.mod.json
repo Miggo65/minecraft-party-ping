@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "minecraft_ping_mod",
+  "version": "${version}",
+  "name": "Minecraft Ping Mod",
+  "description": "Client-side party ping markers with relay server sync",
+  "authors": [
+    "mikov"
+  ],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "de.mikov.mcping.PingClientMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "fabric-api": "*",
+    "minecraft": "~1.21.1",
+    "java": ">=21"
+  }
+}
