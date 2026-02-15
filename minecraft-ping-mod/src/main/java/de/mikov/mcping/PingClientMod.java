@@ -17,6 +17,8 @@ import org.lwjgl.glfw.GLFW;
 import java.util.List;
 
 public class PingClientMod implements ClientModInitializer {
+    private static final double MAX_PING_DISTANCE = 256.0;
+
     private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("mcping", "general"));
 
     private KeyBinding pingKey;
@@ -77,7 +79,7 @@ public class PingClientMod implements ClientModInitializer {
             return;
         }
 
-        HitResult target = client.crosshairTarget;
+        HitResult target = client.player.raycast(MAX_PING_DISTANCE, 1.0F, false);
         if (!(target instanceof BlockHitResult blockHitResult)) {
             client.player.sendMessage(Text.literal("Kein Block anvisiert."), true);
             return;

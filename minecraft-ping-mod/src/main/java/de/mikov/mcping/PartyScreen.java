@@ -41,6 +41,8 @@ public class PartyScreen extends Screen {
             relayClient.sendJoin(code, serverId);
             if (client.player != null) {
                 client.player.sendMessage(Text.literal("Party erstellt: " + code), false);
+                client.player.sendMessage(Text.literal("Relay: " + (relayClient.isConnected() ? "verbunden" : "nicht verbunden") + " | " + relayClient.relayUrl()), false);
+                client.player.sendMessage(Text.literal("Server-ID: " + serverId), false);
             }
             client.setScreen(null);
         }).dimensions(centerX - 90, centerY - 10, 180, 20).build());
@@ -53,6 +55,8 @@ public class PartyScreen extends Screen {
                 relayClient.sendJoin(code, serverId);
                 if (client.player != null) {
                     client.player.sendMessage(Text.literal("Party beigetreten: " + code), false);
+                    client.player.sendMessage(Text.literal("Relay: " + (relayClient.isConnected() ? "verbunden" : "nicht verbunden") + " | " + relayClient.relayUrl()), false);
+                    client.player.sendMessage(Text.literal("Server-ID: " + serverId), false);
                 }
                 client.setScreen(null);
             }
@@ -83,9 +87,11 @@ public class PartyScreen extends Screen {
         String status = partyState.inParty()
                 ? "Aktiv: " + partyState.partyCode() + " @ " + partyState.serverId()
                 : "Keine Party aktiv";
+        String relayStatus = relayClient.isConnected() ? "Relay: verbunden" : "Relay: nicht verbunden";
 
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, centerX, centerY - 70, 0xFFFFFF);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(status), centerX, centerY - 55, 0xBFBFBF);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(relayStatus), centerX, centerY - 42, relayClient.isConnected() ? 0x77FF77 : 0xFF7777);
     }
 
     private static String generateCode(int length) {

@@ -9,6 +9,7 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 
@@ -54,9 +55,15 @@ public class PingRenderUtil {
                 int screenY = Math.round(height / 2f - (relative.y / z) * focalLength);
 
                 if (screenX >= -80 && screenX <= width + 80 && screenY >= -80 && screenY <= height + 80) {
-                    drawContext.drawText(textRenderer, "◎", screenX - 4, screenY - 8, 0xFFE66D00, true);
-                    drawContext.drawText(textRenderer, String.format(Locale.ROOT, "%.0fm", distance), screenX - 10, screenY + 4, 0xFFFFFFFF, true);
-                    drawContext.drawText(textRenderer, ping.sender(), screenX - 18, screenY + 14, 0xFFBFBFBF, false);
+                    float scale = (float) Math.max(0.45, Math.min(1.2, 18.0 / (distance + 4.0)));
+
+                    drawContext.getMatrices().pushMatrix();
+                    drawContext.getMatrices().translate(screenX, screenY);
+                    drawContext.getMatrices().scale(scale, scale);
+                    drawContext.drawText(textRenderer, "◎", -4, -8, 0xFFE66D00, true);
+                    drawContext.drawText(textRenderer, String.format(Locale.ROOT, "%.0fm", distance), -10, 4, 0xFFFFFFFF, true);
+                    drawContext.drawText(textRenderer, ping.sender(), -18, 14, 0xFFBFBFBF, false);
+                    drawContext.getMatrices().popMatrix();
                     renderedAtPingPosition = true;
                 }
             }
@@ -80,7 +87,21 @@ public class PingRenderUtil {
 
     public static String currentServerId(MinecraftClient client) {
         if (client.getCurrentServerEntry() != null && client.getCurrentServerEntry().address != null) {
-            return client.getCurrentServerEntry().address.trim().toLowerCase(Locale.ROOT);
+            String raw = client.getCurrentServerEntry().address.trim().toLowerCase(Locale.ROOT);
+            try {
+                URI uri = URI.create("dummy://" + raw);
+                String host = uri.getHost();
+                int port = uri.getPort();
+                if (host == null || host.isBlank()) {
+                    return raw;
+                }
+                if (port == -1 || port == 25565) {
+                    return host;
+                }
+                return host + ":" + port;
+            } catch (IllegalArgumentException ex) {
+                return raw;
+            }
         }
         if (client.isInSingleplayer()) {
             return "singleplayer";

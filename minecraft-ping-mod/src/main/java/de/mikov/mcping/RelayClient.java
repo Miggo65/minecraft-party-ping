@@ -92,6 +92,14 @@ public class RelayClient {
         sendJson(payload);
     }
 
+    public boolean isConnected() {
+        return webSocket != null;
+    }
+
+    public String relayUrl() {
+        return relayUrl;
+    }
+
     private void sendHelloIfPartyActive() {
         if (partyState.inParty()) {
             sendJoin(partyState.partyCode(), partyState.serverId());
