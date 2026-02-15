@@ -31,6 +31,7 @@ public class PingRenderUtil {
         int width = drawContext.getScaledWindowWidth();
         int height = drawContext.getScaledWindowHeight();
         float focalLength = (float) (height / (2.0 * Math.tan(Math.toRadians(70.0 / 2.0))));
+        int fallbackY = 20;
 
         for (PingRecord ping : pings) {
             double dx = player.getX() - ping.position().x;
@@ -45,20 +46,28 @@ public class PingRenderUtil {
             );
             relative.rotate(cameraRotationInverse);
 
-            if (relative.z <= 0.01f) {
-                continue;
+            boolean renderedAtPingPosition = false;
+
+            if (relative.z < -0.01f) {
+                float z = -relative.z;
+                int screenX = Math.round(width / 2f + (relative.x / z) * focalLength);
+                int screenY = Math.round(height / 2f - (relative.y / z) * focalLength);
+
+                if (screenX >= -80 && screenX <= width + 80 && screenY >= -80 && screenY <= height + 80) {
+                    drawContext.drawText(textRenderer, "◎", screenX - 4, screenY - 8, 0xFFE66D00, true);
+                    drawContext.drawText(textRenderer, String.format(Locale.ROOT, "%.0fm", distance), screenX - 10, screenY + 4, 0xFFFFFFFF, true);
+                    drawContext.drawText(textRenderer, ping.sender(), screenX - 18, screenY + 14, 0xFFBFBFBF, false);
+                    renderedAtPingPosition = true;
+                }
             }
 
-            int screenX = Math.round(width / 2f - (relative.x / relative.z) * focalLength);
-            int screenY = Math.round(height / 2f - (relative.y / relative.z) * focalLength);
-
-            if (screenX < -80 || screenX > width + 80 || screenY < -80 || screenY > height + 80) {
-                continue;
+            if (!renderedAtPingPosition) {
+                int x = width - 64;
+                drawContext.drawText(textRenderer, "◎", x, fallbackY, 0xFFE66D00, true);
+                drawContext.drawText(textRenderer, String.format(Locale.ROOT, "%.0fm", distance), x + 10, fallbackY, 0xFFFFFFFF, true);
+                drawContext.drawText(textRenderer, ping.sender(), x + 10, fallbackY + 10, 0xFFBFBFBF, false);
+                fallbackY += 24;
             }
-
-            drawContext.drawText(textRenderer, "◎", screenX - 4, screenY - 8, 0xFFE66D00, true);
-            drawContext.drawText(textRenderer, String.format(Locale.ROOT, "%.0fm", distance), screenX - 10, screenY + 4, 0xFFFFFFFF, true);
-            drawContext.drawText(textRenderer, ping.sender(), screenX - 18, screenY + 14, 0xFFBFBFBF, false);
         }
     }
 
