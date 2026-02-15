@@ -39,7 +39,10 @@ public class PartyScreen extends Screen {
             String serverId = PingRenderUtil.currentServerId(client);
             partyState.joinParty(code, serverId);
             relayClient.sendJoin(code, serverId);
-            close();
+            if (client.player != null) {
+                client.player.sendMessage(Text.literal("Party erstellt: " + code), false);
+            }
+            client.setScreen(null);
         }).dimensions(centerX - 90, centerY - 10, 180, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Beitreten"), button -> {
@@ -48,17 +51,23 @@ public class PartyScreen extends Screen {
                 String serverId = PingRenderUtil.currentServerId(client);
                 partyState.joinParty(code, serverId);
                 relayClient.sendJoin(code, serverId);
-                close();
+                if (client.player != null) {
+                    client.player.sendMessage(Text.literal("Party beigetreten: " + code), false);
+                }
+                client.setScreen(null);
             }
         }).dimensions(centerX - 90, centerY + 15, 87, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Verlassen"), button -> {
             partyState.leaveParty();
             relayClient.sendLeave();
-            close();
+            if (client.player != null) {
+                client.player.sendMessage(Text.literal("Party verlassen."), false);
+            }
+            client.setScreen(null);
         }).dimensions(centerX + 3, centerY + 15, 87, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Schließen"), button -> close())
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Schließen"), button -> client.setScreen(null))
                 .dimensions(centerX - 90, centerY + 45, 180, 20)
                 .build());
     }

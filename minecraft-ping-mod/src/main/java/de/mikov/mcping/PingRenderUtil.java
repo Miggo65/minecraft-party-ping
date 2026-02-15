@@ -3,7 +3,11 @@ package de.mikov.mcping;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.Camera;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.Vec3d;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Locale;
@@ -19,22 +23,42 @@ public class PingRenderUtil {
             return;
         }
 
+        Camera camera = client.gameRenderer.getCamera();
+        Vec3d cameraPos = camera.getCameraPos();
+        Quaternionf cameraRotationInverse = new Quaternionf(camera.getRotation()).conjugate();
+
         TextRenderer textRenderer = client.textRenderer;
-        int startY = 20;
+        int width = drawContext.getScaledWindowWidth();
+        int height = drawContext.getScaledWindowHeight();
+        float focalLength = (float) (height / (2.0 * Math.tan(Math.toRadians(70.0 / 2.0))));
 
         for (PingRecord ping : pings) {
             double dx = player.getX() - ping.position().x;
             double dy = player.getY() - ping.position().y;
             double dz = player.getZ() - ping.position().z;
             double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            int x = drawContext.getScaledWindowWidth() - 35;
-            int y = startY;
 
-            drawContext.drawText(textRenderer, "◎", x, y, 0xFFE66D00, true);
-            drawContext.drawText(textRenderer, String.format(Locale.ROOT, "%.0fm", distance), x - 4, y + 10, 0xFFFFFFFF, true);
-            drawContext.drawText(textRenderer, ping.sender(), x - 24, y + 20, 0xFFBFBFBF, false);
+            Vector3f relative = new Vector3f(
+                    (float) (ping.position().x - cameraPos.x),
+                    (float) (ping.position().y - cameraPos.y),
+                    (float) (ping.position().z - cameraPos.z)
+            );
+            relative.rotate(cameraRotationInverse);
 
-            startY += 34;
+            if (relative.z <= 0.01f) {
+                continue;
+            }
+
+            int screenX = Math.round(width / 2f - (relative.x / relative.z) * focalLength);
+            int screenY = Math.round(height / 2f - (relative.y / relative.z) * focalLength);
+
+            if (screenX < -80 || screenX > width + 80 || screenY < -80 || screenY > height + 80) {
+                continue;
+            }
+
+            drawContext.drawText(textRenderer, "◎", screenX - 4, screenY - 8, 0xFFE66D00, true);
+            drawContext.drawText(textRenderer, String.format(Locale.ROOT, "%.0fm", distance), screenX - 10, screenY + 4, 0xFFFFFFFF, true);
+            drawContext.drawText(textRenderer, ping.sender(), screenX - 18, screenY + 14, 0xFFBFBFBF, false);
         }
     }
 
