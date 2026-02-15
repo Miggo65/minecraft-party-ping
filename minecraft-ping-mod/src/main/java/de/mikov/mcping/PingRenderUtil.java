@@ -1,12 +1,9 @@
 package de.mikov.mcping;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
 import java.util.Locale;
@@ -14,30 +11,6 @@ import java.util.Locale;
 public class PingRenderUtil {
 
     private PingRenderUtil() {
-    }
-
-    public static void renderWorldMarkers(WorldRenderContext context, MinecraftClient client, List<PingRecord> pings) {
-        if (client.world == null || pings.isEmpty()) {
-            return;
-        }
-
-        for (PingRecord ping : pings) {
-            Vec3d pos = ping.position();
-            DebugRenderer.drawBox(
-                    context.matrixStack(),
-                    context.consumers(),
-                    pos.x - 0.20,
-                    pos.y,
-                    pos.z - 0.20,
-                    pos.x + 0.20,
-                    pos.y + 0.40,
-                    pos.z + 0.20,
-                    1.0F,
-                    0.85F,
-                    0.1F,
-                    0.9F
-            );
-        }
     }
 
     public static void renderHud(DrawContext drawContext, MinecraftClient client, List<PingRecord> pings) {
@@ -50,7 +23,10 @@ public class PingRenderUtil {
         int startY = 20;
 
         for (PingRecord ping : pings) {
-            double distance = player.getPos().distanceTo(ping.position());
+            double dx = player.getX() - ping.position().x;
+            double dy = player.getY() - ping.position().y;
+            double dz = player.getZ() - ping.position().z;
+            double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
             int x = drawContext.getScaledWindowWidth() - 35;
             int y = startY;
 

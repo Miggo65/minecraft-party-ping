@@ -30,4 +30,4 @@ New-Item -ItemType Directory -Path $modsDir -Force | Out-Null
 Copy-Item -Path $JarPath -Destination $modsDir -Force
 
 Write-Host "Mod installiert: $JarPath -> $modsDir"
-Write-Host "Starte Minecraft mit Fabric Loader 1.21.1 + Fabric API."
+Write-Host "Starte Minecraft mit Fabric Loader 1.21.11 + Fabric API."

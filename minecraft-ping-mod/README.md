@@ -1,6 +1,6 @@
 # Minecraft Ping Mod (Clientside)
 
-Fabric-Clientmod für 1.21.1:
+Fabric-Clientmod für 1.21.11:
 
 - Mausrad (`Button 2`) setzt Ping auf den anvisierten Block
 - Ping bleibt 30 Sekunden sichtbar
@@ -11,7 +11,7 @@ Fabric-Clientmod für 1.21.1:
 ## Voraussetzungen
 
 - Java 21
-- Fabric Loader + Fabric API (Client)
+- Fabric Loader + Fabric API (Client, 1.21.11)
 - Laufender Relay-Server (`ping-relay-server`)
 
 ## Build

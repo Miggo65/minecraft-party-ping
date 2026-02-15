@@ -22,4 +22,4 @@ mkdir -p "${MODS_DIR}"
 cp -f "${JAR_PATH}" "${MODS_DIR}/"
 
 echo "Mod installiert: ${JAR_PATH} -> ${MODS_DIR}"
-echo "Starte Minecraft mit Fabric Loader 1.21.1 + Fabric API."
+echo "Starte Minecraft mit Fabric Loader 1.21.11 + Fabric API."

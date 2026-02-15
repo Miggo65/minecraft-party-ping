@@ -4,13 +4,13 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
 
@@ -35,22 +35,17 @@ public class PingClientMod implements ClientModInitializer {
                 "key.mcping.ping",
                 InputUtil.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_MIDDLE,
-                "category.mcping"
+            KeyBinding.Category.create(Identifier.of("mcping", "general"))
         ));
 
         partyMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.mcping.party",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_P,
-                "category.mcping"
+            KeyBinding.Category.create(Identifier.of("mcping", "general"))
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
-
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
-            List<PingRecord> pings = pingManager.activePings(System.currentTimeMillis(), PingRenderUtil.currentDimensionKey(client));
-            PingRenderUtil.renderWorldMarkers(context, client, pings);
-        });
 
         HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
             List<PingRecord> pings = pingManager.activePings(System.currentTimeMillis(), PingRenderUtil.currentDimensionKey(client));
