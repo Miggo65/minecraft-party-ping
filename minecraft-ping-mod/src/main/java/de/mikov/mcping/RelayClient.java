@@ -11,8 +11,12 @@ import java.net.http.WebSocket;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RelayClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger("mcping-relay-client");
+
     private final MinecraftClient client;
     private final PingManager pingManager;
     private final PartyState partyState;
@@ -45,6 +49,7 @@ public class RelayClient {
     public void connect() {
         lastConnectAttemptMs = System.currentTimeMillis();
         connecting = true;
+        LOGGER.info("Connecting to relay {}", relayUrl);
 
         httpClient.newWebSocketBuilder()
                 .buildAsync(URI.create(relayUrl), new Listener())
@@ -52,9 +57,11 @@ public class RelayClient {
                     connecting = false;
                     if (err == null) {
                         webSocket = ws;
+                        LOGGER.info("Connected to relay {}", relayUrl);
                         sendHelloIfPartyActive();
                     } else {
                         webSocket = null;
+                        LOGGER.warn("Relay connection failed: {}", err.getMessage());
                     }
                 });
     }
@@ -66,6 +73,7 @@ public class RelayClient {
         payload.addProperty("serverId", serverId);
         payload.addProperty("player", getPlayerName());
         sendJson(payload);
+        LOGGER.info("Join sent party={} serverId={} player={}", partyCode, serverId, getPlayerName());
     }
 
     public void sendLeave() {
@@ -73,9 +81,10 @@ public class RelayClient {
         payload.addProperty("type", "leave");
         payload.addProperty("player", getPlayerName());
         sendJson(payload);
+        LOGGER.info("Leave sent player={}", getPlayerName());
     }
 
-    public void sendPing(Vec3d pos, String dimension) {
+    public void sendPing(Vec3d pos, String dimension, PingType pingType) {
         if (!partyState.inParty()) {
             return;
         }
@@ -89,7 +98,17 @@ public class RelayClient {
         payload.addProperty("y", pos.y);
         payload.addProperty("z", pos.z);
         payload.addProperty("dimension", dimension);
+        payload.addProperty("pingType", pingType.wireValue());
         sendJson(payload);
+        LOGGER.info("Ping sent party={} serverId={} player={} type={} pos=({}, {}, {}) dimension={}",
+            partyState.partyCode(),
+            partyState.serverId(),
+            getPlayerName(),
+            pingType,
+            Math.round(pos.x),
+            Math.round(pos.y),
+            Math.round(pos.z),
+            dimension);
     }
 
     public boolean isConnected() {
@@ -98,6 +117,17 @@ public class RelayClient {
 
     public String relayUrl() {
         return relayUrl;
+    }
+
+    public void close() {
+        WebSocket ws = webSocket;
+        webSocket = null;
+        if (ws != null) {
+            try {
+                ws.sendClose(WebSocket.NORMAL_CLOSURE, "client-reload");
+            } catch (RuntimeException ignored) {
+            }
+        }
     }
 
     private void sendHelloIfPartyActive() {
@@ -145,12 +175,14 @@ public class RelayClient {
         @Override
         public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
             RelayClient.this.webSocket = null;
+            LOGGER.warn("Relay connection closed status={} reason={}", statusCode, reason);
             return CompletableFuture.completedFuture(null);
         }
 
         @Override
         public void onError(WebSocket webSocket, Throwable error) {
             RelayClient.this.webSocket = null;
+            LOGGER.warn("Relay socket error: {}", error.getMessage());
         }
 
         private void handleMessage(String message) {
@@ -159,17 +191,31 @@ public class RelayClient {
                 if (!obj.has("type") || !"ping".equals(obj.get("type").getAsString())) {
                     return;
                 }
-                if (!obj.has("player") || !obj.has("dimension") || !obj.has("x") || !obj.has("y") || !obj.has("z")) {
+                if (!obj.has("player") || !obj.has("serverId") || !obj.has("dimension") || !obj.has("x") || !obj.has("y") || !obj.has("z")) {
                     return;
                 }
 
                 String sender = obj.get("player").getAsString();
+                String serverId = obj.get("serverId").getAsString();
                 String dimension = obj.get("dimension").getAsString();
                 double x = obj.get("x").getAsDouble();
                 double y = obj.get("y").getAsDouble();
                 double z = obj.get("z").getAsDouble();
+                PingType pingType = obj.has("pingType") ? PingType.fromWire(obj.get("pingType").getAsString()) : PingType.NORMAL;
 
-                client.execute(() -> pingManager.addPing(sender, new Vec3d(x, y, z), dimension));
+                if (!partyState.inParty() || !partyState.serverId().equals(serverId)) {
+                    return;
+                }
+
+                LOGGER.info("Ping received sender={} type={} pos=({}, {}, {}) dimension={}",
+                        sender,
+                        pingType,
+                        Math.round(x),
+                        Math.round(y),
+                        Math.round(z),
+                        dimension);
+
+                client.execute(() -> pingManager.addPing(sender, new Vec3d(x, y, z), serverId, dimension, pingType));
             } catch (RuntimeException ignored) {
             }
         }

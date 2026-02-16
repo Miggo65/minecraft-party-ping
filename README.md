@@ -1,13 +1,15 @@
-# Minecraft Party Ping
+# simpleMultiplayerPing
 
-Standalone Repository mit:
+Client-side party ping mod for Minecraft multiplayer.
 
-- `minecraft-ping-mod` (Fabric Client-Mod für 1.21.1)
-- `ping-relay-server` (Node.js WebSocket Relay)
+This repository contains:
 
-## Schnellstart
+- `minecraft-ping-mod` – Fabric client mod (Minecraft 1.21.11)
+- `ping-relay-server` – Node.js WebSocket relay server
 
-1. Relay installieren/starten:
-   - Siehe `ping-relay-server/README.md`
-2. Mod bauen/installieren:
-   - Siehe `minecraft-ping-mod/README.md`
+## Quick Start
+
+1. Install/start the relay:
+   - [ping-relay-server/README.md](ping-relay-server/README.md)
+2. Build/install the mod:
+   - [minecraft-ping-mod/README.md](minecraft-ping-mod/README.md)

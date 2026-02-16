@@ -1,35 +1,54 @@
 # Ping Relay Server
 
-Ein minimaler WebSocket-Relay für die clientseitige Minecraft-Ping-Mod.
+Minimal WebSocket relay for `simpleMultiplayerPing`.
 
-## Install auf Linux-Server (systemd)
+## Requirements
+
+- Linux server (recommended)
+- Node.js 20+
+- Open TCP port (default `8787`)
+
+## Install as systemd service (recommended)
 
 ```bash
 chmod +x install.sh
 sudo bash install.sh
 ```
 
-Optionaler Port:
+Optional custom port:
 
 ```bash
 sudo PORT=8787 bash install.sh
 ```
 
-## Start
+Service name: `ping-relay`
+
+Useful commands:
+
+```bash
+sudo systemctl status ping-relay
+sudo journalctl -u ping-relay -f
+sudo systemctl restart ping-relay
+```
+
+## Manual run (dev/test)
 
 ```bash
 npm install
 npm start
 ```
 
-Optionaler Port:
+Optional port:
 
 ```bash
 PORT=8787 npm start
 ```
 
-## Verhalten
+## Relay behavior
 
-- Der Server speichert pro Verbindung: `party`, `serverId`, `player`
-- `ping`-Events werden **nur** an Clients mit identischer `party` und identischem `serverId` gesendet
-- Der Sender bekommt den Ping nicht zurück (Client zeigt lokalen Ping direkt an)
+- Tracks per connection: `party`, `serverId`, `player`
+- Broadcasts `ping` only to clients with matching `party` **and** matching `serverId`
+- Sender does not receive their own ping back
+- Includes `pingType` (`normal`, `warning`, `go`) in forwarded payloads
+
+This prevents cross-server ping leaks and keeps party groups isolated.

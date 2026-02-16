@@ -1,6 +1,5 @@
 param(
-    [string]$JarPath,
-    [string]$MinecraftDir = "$env:APPDATA\.minecraft"
+    [string]$JarPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,7 +23,7 @@ if (-not (Test-Path $JarPath)) {
     throw "JAR nicht gefunden: $JarPath"
 }
 
-$modsDir = Join-Path $MinecraftDir 'mods'
+$modsDir = 'C:\Users\mikov\.lunarclient\profiles\vanilla\1.21\mods\fabric-1.21.11'
 New-Item -ItemType Directory -Path $modsDir -Force | Out-Null
 
 Copy-Item -Path $JarPath -Destination $modsDir -Force

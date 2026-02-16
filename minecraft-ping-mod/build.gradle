@@ -13,6 +13,7 @@ base {
 repositories {
     mavenCentral()
     maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://maven.terraformersmc.com/' }
 }
 
 dependencies {
@@ -22,6 +23,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-key-binding-api-v1:1.1.7+4fc5413f3e"
     modImplementation "net.fabricmc.fabric-api:fabric-lifecycle-events-v1:2.6.15+4ebb5c083e"
     modImplementation "net.fabricmc.fabric-api:fabric-rendering-v1:16.2.10+0290ad933e"
+    modCompileOnly "com.terraformersmc:modmenu:12.0.0"
 }
 
 java {

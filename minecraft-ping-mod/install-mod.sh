@@ -15,8 +15,7 @@ if [[ -z "${JAR_PATH}" || ! -f "${JAR_PATH}" ]]; then
   exit 1
 fi
 
-MINECRAFT_DIR="${MINECRAFT_DIR:-$HOME/.minecraft}"
-MODS_DIR="${MINECRAFT_DIR}/mods"
+MODS_DIR="/c/Users/mikov/.lunarclient/profiles/vanilla/1.21/mods/fabric-1.21.11"
 
 mkdir -p "${MODS_DIR}"
 cp -f "${JAR_PATH}" "${MODS_DIR}/"

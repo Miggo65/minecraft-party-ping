@@ -15,6 +15,28 @@ function isString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function normalizeParty(value) {
+  return value.trim().toUpperCase();
+}
+
+function normalizeServerId(value) {
+  return value.trim().toLowerCase();
+}
+
+function normalizePingType(value) {
+  if (!isString(value)) {
+    return 'normal';
+  }
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'warning' || normalized === 'vorsicht' || normalized === 'achtung') {
+    return 'warning';
+  }
+  if (normalized === 'go' || normalized === 'move' || normalized === 'gehen') {
+    return 'go';
+  }
+  return 'normal';
+}
+
 function broadcastPing(senderWs, payload) {
   for (const client of wss.clients) {
     if (client === senderWs) {
@@ -37,6 +59,7 @@ wss.on('connection', (ws) => {
   ws.party = '';
   ws.serverId = '';
   ws.player = 'unknown';
+  console.log('[relay] client connected');
 
   ws.on('message', (raw) => {
     const msg = safeParse(raw);
@@ -48,13 +71,15 @@ wss.on('connection', (ws) => {
       if (!isString(msg.party) || !isString(msg.serverId)) {
         return;
       }
-      ws.party = msg.party.trim().toUpperCase();
-      ws.serverId = msg.serverId.trim().toLowerCase();
+      ws.party = normalizeParty(msg.party);
+      ws.serverId = normalizeServerId(msg.serverId);
       ws.player = isString(msg.player) ? msg.player.trim() : 'unknown';
+      console.log(`[relay] join player=${ws.player} party=${ws.party} server=${ws.serverId}`);
       return;
     }
 
     if (msg.type === 'leave') {
+      console.log(`[relay] leave player=${ws.player} party=${ws.party} server=${ws.serverId}`);
       ws.party = '';
       ws.serverId = '';
       return;
@@ -68,23 +93,39 @@ wss.on('connection', (ws) => {
         return;
       }
 
+      const incomingParty = normalizeParty(msg.party);
+      const incomingServerId = normalizeServerId(msg.serverId);
+      if (!ws.party || !ws.serverId) {
+        return;
+      }
+      if (incomingParty !== ws.party || incomingServerId !== ws.serverId) {
+        return;
+      }
+
       const payload = {
         type: 'ping',
-        party: msg.party.trim().toUpperCase(),
-        serverId: msg.serverId.trim().toLowerCase(),
-        player: isString(msg.player) ? msg.player.trim() : ws.player,
+        party: ws.party,
+        serverId: ws.serverId,
+        player: ws.player,
         dimension: msg.dimension,
         x: msg.x,
         y: msg.y,
         z: msg.z,
+        pingType: normalizePingType(msg.pingType),
         t: Date.now()
       };
+
+      console.log(`[relay] ping from=${payload.player} party=${payload.party} server=${payload.serverId} type=${payload.pingType} pos=(${Math.round(payload.x)}, ${Math.round(payload.y)}, ${Math.round(payload.z)}) dim=${payload.dimension}`);
 
       broadcastPing(ws, payload);
     }
   });
 
   ws.on('error', () => {
+  });
+
+  ws.on('close', () => {
+    console.log(`[relay] client disconnected player=${ws.player}`);
   });
 });
 

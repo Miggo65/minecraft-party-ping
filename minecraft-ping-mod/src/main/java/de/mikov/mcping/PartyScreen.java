@@ -31,47 +31,47 @@ public class PartyScreen extends Screen {
         int centerY = this.height / 2;
 
         codeField = new TextFieldWidget(this.textRenderer, centerX - 90, centerY - 40, 180, 20, Text.literal("Party Code"));
-        codeField.setPlaceholder(Text.literal("Code eingeben"));
+        codeField.setPlaceholder(Text.literal("Enter code"));
         this.addDrawableChild(codeField);
 
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Party erstellen"), button -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Create Party"), button -> {
             String code = generateCode(6);
             String serverId = PingRenderUtil.currentServerId(client);
             partyState.joinParty(code, serverId);
             relayClient.sendJoin(code, serverId);
             if (client.player != null) {
-                client.player.sendMessage(Text.literal("Party erstellt: " + code), false);
-                client.player.sendMessage(Text.literal("Relay: " + (relayClient.isConnected() ? "verbunden" : "nicht verbunden") + " | " + relayClient.relayUrl()), false);
-                client.player.sendMessage(Text.literal("Server-ID: " + serverId), false);
+                client.player.sendMessage(Text.literal("Party created: " + code), false);
+                client.player.sendMessage(Text.literal("Relay: " + (relayClient.isConnected() ? "connected" : "disconnected") + " | " + relayClient.relayUrl()), false);
+                client.player.sendMessage(Text.literal("Server ID: " + serverId), false);
             }
             client.setScreen(null);
         }).dimensions(centerX - 90, centerY - 10, 180, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Beitreten"), button -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Join Party"), button -> {
             String code = codeField.getText().trim().toUpperCase();
             if (!code.isBlank()) {
                 String serverId = PingRenderUtil.currentServerId(client);
                 partyState.joinParty(code, serverId);
                 relayClient.sendJoin(code, serverId);
                 if (client.player != null) {
-                    client.player.sendMessage(Text.literal("Party beigetreten: " + code), false);
-                    client.player.sendMessage(Text.literal("Relay: " + (relayClient.isConnected() ? "verbunden" : "nicht verbunden") + " | " + relayClient.relayUrl()), false);
-                    client.player.sendMessage(Text.literal("Server-ID: " + serverId), false);
+                    client.player.sendMessage(Text.literal("Joined party: " + code), false);
+                    client.player.sendMessage(Text.literal("Relay: " + (relayClient.isConnected() ? "connected" : "disconnected") + " | " + relayClient.relayUrl()), false);
+                    client.player.sendMessage(Text.literal("Server ID: " + serverId), false);
                 }
                 client.setScreen(null);
             }
         }).dimensions(centerX - 90, centerY + 15, 87, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Verlassen"), button -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Leave"), button -> {
             partyState.leaveParty();
             relayClient.sendLeave();
             if (client.player != null) {
-                client.player.sendMessage(Text.literal("Party verlassen."), false);
+                client.player.sendMessage(Text.literal("Left party."), false);
             }
             client.setScreen(null);
         }).dimensions(centerX + 3, centerY + 15, 87, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Schließen"), button -> client.setScreen(null))
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Close"), button -> client.setScreen(null))
                 .dimensions(centerX - 90, centerY + 45, 180, 20)
                 .build());
     }
@@ -85,9 +85,9 @@ public class PartyScreen extends Screen {
         int centerY = this.height / 2;
 
         String status = partyState.inParty()
-                ? "Aktiv: " + partyState.partyCode() + " @ " + partyState.serverId()
-                : "Keine Party aktiv";
-        String relayStatus = relayClient.isConnected() ? "Relay: verbunden" : "Relay: nicht verbunden";
+            ? "Active: " + partyState.partyCode() + " @ " + partyState.serverId()
+            : "No active party";
+        String relayStatus = relayClient.isConnected() ? "Relay: connected" : "Relay: disconnected";
 
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, centerX, centerY - 70, 0xFFFFFF);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(status), centerX, centerY - 55, 0xBFBFBF);
