@@ -100,8 +100,3 @@ Party menu (default party is code `1`):
 
 ![Party menu](https://cdn.modrinth.com/data/cached_images/d5ea56c6640b7feb8a4d0e47abfb9f17c089d3dc_0.webp)
 
-## Modrinth Description
-
-Use the ready-to-paste text from:
-
-`MODRINTH_DESCRIPTION.md`
