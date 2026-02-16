@@ -1,7 +1,8 @@
 # simpleMultiplayerPing
 
 Client-side party ping mod for Minecraft multiplayer.
-
+For more Information:
+[minecraft-ping-mod/README.md](minecraft-ping-mod/README.md)
 This repository contains:
 
 - `minecraft-ping-mod` – Fabric client mod (Minecraft 1.21.11)
