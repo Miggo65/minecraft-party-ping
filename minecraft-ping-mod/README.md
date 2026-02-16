@@ -89,3 +89,19 @@ You can override this in Mod Menu settings (`Relay Host`) to use your own server
 4. Use `P` only if you and others want different groups on the same server.
 
 Pings are isolated by both `party` and `serverId` to prevent cross-server leaks.
+
+## Screenshots
+
+Ping wheel selection + warning/move ping examples (color is configurable):
+
+![Ping wheel and ping types](https://cdn.modrinth.com/data/cached_images/90ff7de2b698e5e33a225e972cc03844a2dfd48b_0.webp)
+
+Party menu (default party is code `1`):
+
+![Party menu](https://cdn.modrinth.com/data/cached_images/d5ea56c6640b7feb8a4d0e47abfb9f17c089d3dc_0.webp)
+
+## Modrinth Description
+
+Use the ready-to-paste text from:
+
+`MODRINTH_DESCRIPTION.md`
