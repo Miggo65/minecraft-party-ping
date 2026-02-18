@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "de.mikov.mcping.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "XaeroTemporaryWaypointFunctionMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
