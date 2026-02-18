@@ -101,12 +101,11 @@ public class PingRenderUtil {
                     int senderColor = resolvePingColorArgb(ping.sender(), ownPlayerName, config);
 
                     if (ping.type() == PingType.WARNING) {
-                        drawCenteredScaledGlyph(drawContext, textRenderer, "▲", 0.0f, -8.0f, 1.18f, senderColor, false);
-                        drawCenteredScaledGlyph(drawContext, textRenderer, "!", 0.0f, -7.7f, 0.82f, 0xFF101010, false);
+                        drawWarningPingIcon(drawContext, textRenderer, senderColor);
                     } else if (ping.type() == PingType.GO) {
                         drawContext.drawText(textRenderer, "⚑", -4, -8, senderColor, false);
                     } else {
-                        drawContext.drawText(textRenderer, "◎", -4, -8, senderColor, false);
+                        drawNormalPingIcon(drawContext, senderColor);
                     }
 
                     drawContext.drawText(textRenderer, String.format(Locale.ROOT, "%.0fm", distance), -10, 4, 0xFFFFFFFF, true);
@@ -217,6 +216,171 @@ public class PingRenderUtil {
         drawContext.getMatrices().scale(scale, scale);
         drawContext.drawText(textRenderer, glyph, 0, 0, color, shadow);
         drawContext.getMatrices().popMatrix();
+    }
+
+    private static void drawWarningPingIcon(DrawContext drawContext, TextRenderer textRenderer, int senderColor) {
+        // Pixel-perfect Warning Triangle (11px wide base, ~10px tall)
+        // Center x=0. To centre vertically around 0, we shift coordinates.
+        // Let's draw relative to (0, -4) as "center" of the icon visually.
+
+        // 1. Draw Triangle Background (Sender Color)
+        // Row -9 (Top tip)
+        drawContext.fill(0, -9, 1, -8, senderColor);
+        // Row -8
+        drawContext.fill(-1, -8, 2, -7, senderColor);
+        // Row -7
+        drawContext.fill(-1, -7, 2, -6, senderColor);
+        // Row -6
+        drawContext.fill(-2, -6, 3, -5, senderColor);
+        // Row -5
+        drawContext.fill(-2, -5, 3, -4, senderColor);
+        // Row -4
+        drawContext.fill(-3, -4, 4, -3, senderColor);
+        // Row -3
+        drawContext.fill(-3, -3, 4, -2, senderColor);
+        // Row -2 (Base)
+        drawContext.fill(-4, -2, 5, -1, senderColor);
+
+        // 2. Draw Exclamation Mark (Black 0xFF000000 or near black)
+        int black = 0xFF101010;
+        
+        // Stem: x=0, y=-7 to -4 (Original was -3, moved up to shorten)
+        // Fills y = -7, -6, -5
+        drawContext.fill(0, -7, 1, -4, black);
+        
+        // Dot: x=0, y=-3 (Moved up from -2)
+        // Fills y = -3
+        drawContext.fill(0, -3, 1, -2, black); 
+    }
+
+    private static void drawNormalPingIcon(DrawContext drawContext, int senderColor) {
+        // "Cleaner" Normal Ping - Rounder Design
+        // Center x=0, y=-4
+        
+        int centerY = -4; 
+        
+        int black = 0xFF000000;
+        // Inner field: Darker but with more saturation (less greyed out)
+        // We mix senderColor with black but try to keep saturation.
+        int r = (senderColor >> 16) & 0xFF;
+        int g = (senderColor >> 8) & 0xFF;
+        int b = senderColor & 0xFF;
+        // Simple darken
+        int dimColor = ((int)(r * 0.6) << 16) | ((int)(g * 0.6) << 8) | (int)(b * 0.6) | 0xFF000000;
+
+        // Bright outline (colored but brighter version of senderColor)
+        // Or "rand auch im Farbton aber etwas heller"
+        int outlineR = Math.min(255, (int)(r * 1.3));
+        int outlineG = Math.min(255, (int)(g * 1.3));
+        int outlineB = Math.min(255, (int)(b * 1.3));
+        int outline = (outlineR << 16) | (outlineG << 8) | outlineB | 0xFF000000;
+
+        // 1. Outer Outline (Rounder shape)
+        // 7x7 canvas (-3 to +3 in relative X)
+        //     .XXX.
+        //    X.....X
+        //   X.......X
+        //   X.......X
+        //   X.......X
+        //    X.....X
+        //     .XXX.
+        
+        // Top/Bottom caps
+        drawContext.fill(-1, centerY - 3, 2, centerY - 2, outline);
+        drawContext.fill(-1, centerY + 3, 2, centerY + 4, outline);
+        // Side caps
+        drawContext.fill(-3, centerY - 1, -2, centerY + 2, outline);
+        drawContext.fill( 3, centerY - 1,  4, centerY + 2, outline);
+        // Corners (diagonal pixels)
+        drawContext.fill(-2, centerY - 3, -1, centerY - 2, outline);
+        drawContext.fill( 2, centerY - 3,  3, centerY - 2, outline);
+        drawContext.fill(-3, centerY - 2, -2, centerY - 1, outline);
+        drawContext.fill( 3, centerY - 2,  4, centerY - 1, outline);
+        drawContext.fill(-3, centerY + 2, -2, centerY + 3, outline);
+        drawContext.fill( 3, centerY + 2,  4, centerY + 3, outline);
+        drawContext.fill(-2, centerY + 3, -1, centerY + 4, outline);
+        drawContext.fill( 2, centerY + 3,  3, centerY + 4, outline);
+
+        // 2. Main Ring (Sender Color)
+        //     .XXX.
+        //    X.....X
+        //    X.....X
+        //    X.....X
+        //     .XXX.
+        // Similar shape but 1 px smaller radius
+        
+        // Horizontal main bars
+        drawContext.fill(-1, centerY - 2, 2, centerY - 1, senderColor); // Top
+        drawContext.fill(-1, centerY + 2, 2, centerY + 3, senderColor); // Bottom
+        // Vertical main bars
+        drawContext.fill(-2, centerY - 1, -1, centerY + 2, senderColor); // Left
+        drawContext.fill( 2, centerY - 1,  3, centerY + 2, senderColor); // Right
+        // Corner fillers for roundness (inner ring)
+        drawContext.fill(-2, centerY - 2, -1, centerY - 1, senderColor);
+        drawContext.fill( 2, centerY - 2,  3, centerY - 1, senderColor);
+        drawContext.fill(-2, centerY + 2, -1, centerY + 3, senderColor);
+        drawContext.fill( 2, centerY + 2,  3, centerY + 3, senderColor);
+        
+        // 3. Inner Field (Dim Color) - 3x3 circle-ish
+        // We can just fill the 3x3 box, the corners will be covered by the ring if we did it right, 
+        // but let's be safe and just fill the center cross
+        drawContext.fill(-1, centerY - 1, 2, centerY + 2, dimColor); 
+
+        // 4. Center Dot (Black)
+        drawContext.fill(0, centerY, 1, centerY + 1, black);
+    }
+
+    private static void drawFilledCircle(DrawContext drawContext, int centerX, int centerY, int radius, int color) {
+        int radiusSquared = radius * radius;
+        for (int y = -radius; y <= radius; y++) {
+            for (int x = -radius; x <= radius; x++) {
+                if (x * x + y * y <= radiusSquared) {
+                    drawContext.fill(centerX + x, centerY + y, centerX + x + 1, centerY + y + 1, color);
+                }
+            }
+        }
+    }
+
+    private static void drawRing(DrawContext drawContext, int centerX, int centerY, int outerRadius, int innerRadius, int color) {
+        int outerSquared = outerRadius * outerRadius;
+        int innerSquared = innerRadius * innerRadius;
+
+        for (int y = -outerRadius; y <= outerRadius; y++) {
+            for (int x = -outerRadius; x <= outerRadius; x++) {
+                int distanceSquared = x * x + y * y;
+                if (distanceSquared <= outerSquared && distanceSquared >= innerSquared) {
+                    drawContext.fill(centerX + x, centerY + y, centerX + x + 1, centerY + y + 1, color);
+                }
+            }
+        }
+    }
+
+    private static int lightenColor(int argb, float amount) {
+        int alpha = (argb >>> 24) & 0xFF;
+        int red = (argb >>> 16) & 0xFF;
+        int green = (argb >>> 8) & 0xFF;
+        int blue = argb & 0xFF;
+
+        red = clampColorChannel((int) (red + (255 - red) * amount));
+        green = clampColorChannel((int) (green + (255 - green) * amount));
+        blue = clampColorChannel((int) (blue + (255 - blue) * amount));
+        return (alpha << 24) | (red << 16) | (green << 8) | blue;
+    }
+
+    private static int darkenColor(int argb, float amount) {
+        int alpha = (argb >>> 24) & 0xFF;
+        int red = (argb >>> 16) & 0xFF;
+        int green = (argb >>> 8) & 0xFF;
+        int blue = argb & 0xFF;
+
+        red = clampColorChannel((int) (red * (1.0f - amount)));
+        green = clampColorChannel((int) (green * (1.0f - amount)));
+        blue = clampColorChannel((int) (blue * (1.0f - amount)));
+        return (alpha << 24) | (red << 16) | (green << 8) | blue;
+    }
+
+    private static int clampColorChannel(int value) {
+        return Math.max(0, Math.min(255, value));
     }
 
     private static float resolveTickDelta(Object renderTickCounter) {

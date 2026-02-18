@@ -21,6 +21,29 @@ Optional custom port:
 sudo PORT=8787 bash install.sh
 ```
 
+The installer now creates a dedicated system user (`pingrelay`) and a hardened
+systemd unit with restart policy, memory cap flags, privilege restrictions, and
+sandboxing.
+
+Runtime/security limits are stored in:
+
+```bash
+/etc/default/ping-relay
+```
+
+You can tune values like:
+
+- `MAX_MESSAGE_BYTES`
+- `MAX_INVALID_MESSAGES`
+- `PING_RATE_WINDOW_MS`
+- `PING_RATE_MAX`
+
+After edits:
+
+```bash
+sudo systemctl restart ping-relay
+```
+
 Service name: `ping-relay`
 
 Useful commands:
@@ -30,6 +53,18 @@ sudo systemctl status ping-relay
 sudo journalctl -u ping-relay -f
 sudo systemctl restart ping-relay
 ```
+
+## Deploy update to proxy (SSH)
+
+If the relay runs on a separate proxy host:
+
+```bash
+chmod +x deploy-proxy.sh
+./deploy-proxy.sh <user@host> 8787
+```
+
+This copies `index.js` + install files, re-runs install remotely, and restarts
+`ping-relay`.
 
 ## Manual run (dev/test)
 

@@ -21,9 +21,9 @@ public class PingClientMod implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger("mcping-client");
 
     private static final double MAX_PING_DISTANCE = 256.0;
-    private static final double PING_SELECTION_THRESHOLD_PIXELS = 10.0;
+    private static final double PING_SELECTION_THRESHOLD_PIXELS = 5.0;
     private static final String DEFAULT_PARTY_CODE = "1";
-    private static final long SELECTION_DELAY_MS = 300;
+    private static final long SELECTION_DELAY_MS = 120;
 
     private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("simplemultiplayerping", "general"));
 
@@ -90,6 +90,10 @@ public class PingClientMod implements ClientModInitializer {
     
     public boolean isPingWheelOpen() {
         return isPingWheelOpen;
+    }
+
+    public boolean isPingKeyDown() {
+        return pingKeyDown;
     }
 
     private void onClientTick(MinecraftClient client) {
@@ -247,4 +251,5 @@ public class PingClientMod implements ClientModInitializer {
         relayClient.sendJoin(DEFAULT_PARTY_CODE, serverId);
         LOGGER.info("Auto-joined default party={} for serverId={}", DEFAULT_PARTY_CODE, serverId);
     }
+
 }
