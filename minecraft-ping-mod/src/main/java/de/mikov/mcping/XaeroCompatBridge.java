@@ -15,6 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class XaeroCompatBridge {
     private static final Logger LOGGER = LoggerFactory.getLogger("mcping-xaero-compat");
+    private static final String PING_NAME = "Ping";
+    private static final String PING_WARNING_NAME = "Ping Warning";
+    private static final String PING_GO_NAME = "Ping Go";
 
     private static final Map<String, Object> ACTIVE_WAYPOINTS = new ConcurrentHashMap<>();
 
@@ -36,6 +39,27 @@ public final class XaeroCompatBridge {
     private static volatile Method waypointSetGetWaypointsMethod;
 
     private XaeroCompatBridge() {
+    }
+
+    public static boolean isOwnPingWaypoint(Object waypoint) {
+        if (waypoint == null) {
+            return false;
+        }
+
+        if (ACTIVE_WAYPOINTS.containsValue(waypoint)) {
+            return true;
+        }
+
+        if (waypointGetNameMethod == null) {
+            return false;
+        }
+
+        try {
+            String name = String.valueOf(waypointGetNameMethod.invoke(waypoint));
+            return PING_NAME.equals(name) || PING_WARNING_NAME.equals(name) || PING_GO_NAME.equals(name);
+        } catch (IllegalAccessException | InvocationTargetException ignored) {
+            return false;
+        }
     }
 
     public static void upsertPing(PingRecord ping) {
@@ -284,10 +308,6 @@ public final class XaeroCompatBridge {
                 return;
             }
 
-            int ownX = (int) waypointGetXMethod.invoke(ownWaypoint);
-            int ownY = (int) waypointGetYMethod.invoke(ownWaypoint);
-            int ownZ = (int) waypointGetZMethod.invoke(ownWaypoint);
-
             List<Object> toRemove = new ArrayList<>();
             for (Object waypoint : iterable) {
                 if (waypoint == null || waypoint == ownWaypoint) {
@@ -295,15 +315,7 @@ public final class XaeroCompatBridge {
                 }
 
                 String waypointName = String.valueOf(waypointGetNameMethod.invoke(waypoint));
-                if (!"default".equalsIgnoreCase(waypointName)) {
-                    continue;
-                }
-
-                int waypointX = (int) waypointGetXMethod.invoke(waypoint);
-                int waypointY = (int) waypointGetYMethod.invoke(waypoint);
-                int waypointZ = (int) waypointGetZMethod.invoke(waypoint);
-
-                if (waypointX == ownX && waypointY == ownY && waypointZ == ownZ) {
+                if ("default".equalsIgnoreCase(waypointName)) {
                     toRemove.add(waypoint);
                 }
             }

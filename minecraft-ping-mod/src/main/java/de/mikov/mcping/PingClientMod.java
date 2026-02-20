@@ -93,7 +93,29 @@ public class PingClientMod implements ClientModInitializer {
     }
 
     public boolean isPingKeyDown() {
-        return pingKeyDown;
+        if (pingKeyDown) {
+            return true;
+        }
+        if (pingKey == null) {
+            return false;
+        }
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.getWindow() == null) {
+            return false;
+        }
+
+        long handle = client.getWindow().getHandle();
+        InputUtil.Key bound = KeyBindingHelper.getBoundKeyOf(pingKey);
+        if (bound == null) {
+            return false;
+        }
+
+        if (bound.getCategory() == InputUtil.Type.MOUSE) {
+            return GLFW.glfwGetMouseButton(handle, bound.getCode()) == GLFW.GLFW_PRESS;
+        }
+
+        return GLFW.glfwGetKey(handle, bound.getCode()) == GLFW.GLFW_PRESS;
     }
 
     private void onClientTick(MinecraftClient client) {
