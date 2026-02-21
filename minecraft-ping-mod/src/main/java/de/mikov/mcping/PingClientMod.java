@@ -21,9 +21,9 @@ public class PingClientMod implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger("mcping-client");
 
     private static final double MAX_PING_DISTANCE = 256.0;
-    private static final double PING_SELECTION_THRESHOLD_PIXELS = 10.0;
+    private static final double PING_SELECTION_THRESHOLD_PIXELS = 5.0;
     private static final String DEFAULT_PARTY_CODE = "1";
-    private static final long SELECTION_DELAY_MS = 300;
+    private static final long SELECTION_DELAY_MS = 120;
 
     private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("simplemultiplayerping", "general"));
 
@@ -90,6 +90,32 @@ public class PingClientMod implements ClientModInitializer {
     
     public boolean isPingWheelOpen() {
         return isPingWheelOpen;
+    }
+
+    public boolean isPingKeyDown() {
+        if (pingKeyDown) {
+            return true;
+        }
+        if (pingKey == null) {
+            return false;
+        }
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.getWindow() == null) {
+            return false;
+        }
+
+        long handle = client.getWindow().getHandle();
+        InputUtil.Key bound = KeyBindingHelper.getBoundKeyOf(pingKey);
+        if (bound == null) {
+            return false;
+        }
+
+        if (bound.getCategory() == InputUtil.Type.MOUSE) {
+            return GLFW.glfwGetMouseButton(handle, bound.getCode()) == GLFW.GLFW_PRESS;
+        }
+
+        return GLFW.glfwGetKey(handle, bound.getCode()) == GLFW.GLFW_PRESS;
     }
 
     private void onClientTick(MinecraftClient client) {
@@ -247,4 +273,5 @@ public class PingClientMod implements ClientModInitializer {
         relayClient.sendJoin(DEFAULT_PARTY_CODE, serverId);
         LOGGER.info("Auto-joined default party={} for serverId={}", DEFAULT_PARTY_CODE, serverId);
     }
+
 }

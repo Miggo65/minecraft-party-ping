@@ -2,6 +2,7 @@ package de.mikov.mcping;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.Vec3d;
 
@@ -9,6 +10,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.time.Duration;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import org.slf4j.Logger;
@@ -16,6 +18,13 @@ import org.slf4j.LoggerFactory;
 
 public class RelayClient {
     private static final Logger LOGGER = LoggerFactory.getLogger("mcping-relay-client");
+    private static final int MAX_INBOUND_MESSAGE_CHARS = 4096;
+    private static final double MAX_ABS_COORDINATE = 30_000_000.0;
+    private static final double MIN_Y = -2048.0;
+    private static final double MAX_Y = 4096.0;
+    private static final int MAX_PLAYER_LENGTH = 32;
+    private static final int MAX_SERVER_ID_LENGTH = 96;
+    private static final int MAX_DIMENSION_LENGTH = 96;
 
     private final MinecraftClient client;
     private final PingManager pingManager;
@@ -187,20 +196,32 @@ public class RelayClient {
 
         private void handleMessage(String message) {
             try {
-                JsonObject obj = JsonParser.parseString(message).getAsJsonObject();
-                if (!obj.has("type") || !"ping".equals(obj.get("type").getAsString())) {
-                    return;
-                }
-                if (!obj.has("player") || !obj.has("serverId") || !obj.has("dimension") || !obj.has("x") || !obj.has("y") || !obj.has("z")) {
+                if (message == null || message.length() == 0 || message.length() > MAX_INBOUND_MESSAGE_CHARS) {
                     return;
                 }
 
-                String sender = obj.get("player").getAsString();
-                String serverId = obj.get("serverId").getAsString();
-                String dimension = obj.get("dimension").getAsString();
-                double x = obj.get("x").getAsDouble();
-                double y = obj.get("y").getAsDouble();
-                double z = obj.get("z").getAsDouble();
+                JsonObject obj = JsonParser.parseString(message).getAsJsonObject();
+                if (!"ping".equals(readRequiredString(obj, "type", 16))) {
+                    return;
+                }
+
+                String sender = readRequiredString(obj, "player", MAX_PLAYER_LENGTH);
+                String serverId = readRequiredString(obj, "serverId", MAX_SERVER_ID_LENGTH);
+                String dimension = readRequiredString(obj, "dimension", MAX_DIMENSION_LENGTH);
+                Double x = readRequiredNumber(obj, "x");
+                Double y = readRequiredNumber(obj, "y");
+                Double z = readRequiredNumber(obj, "z");
+                if (sender == null || serverId == null || dimension == null || x == null || y == null || z == null) {
+                    return;
+                }
+
+                if (!isValidIdentifier(serverId) || !isValidIdentifier(dimension)) {
+                    return;
+                }
+                if (!isWithinBounds(x, y, z)) {
+                    return;
+                }
+
                 PingType pingType = obj.has("pingType") ? PingType.fromWire(obj.get("pingType").getAsString()) : PingType.NORMAL;
 
                 if (!partyState.inParty() || !partyState.serverId().equals(serverId)) {
@@ -218,6 +239,61 @@ public class RelayClient {
                 client.execute(() -> pingManager.addPing(sender, new Vec3d(x, y, z), serverId, dimension, pingType));
             } catch (RuntimeException ignored) {
             }
+        }
+
+        private static String readRequiredString(JsonObject obj, String key, int maxLength) {
+            if (!obj.has(key)) {
+                return null;
+            }
+            if (!(obj.get(key) instanceof JsonPrimitive primitive) || !primitive.isString()) {
+                return null;
+            }
+            String value = primitive.getAsString();
+            if (value == null) {
+                return null;
+            }
+
+            String trimmed = value.trim();
+            if (trimmed.isEmpty() || trimmed.length() > maxLength) {
+                return null;
+            }
+            return trimmed;
+        }
+
+        private static Double readRequiredNumber(JsonObject obj, String key) {
+            if (!obj.has(key)) {
+                return null;
+            }
+            if (!(obj.get(key) instanceof JsonPrimitive primitive) || !primitive.isNumber()) {
+                return null;
+            }
+
+            double value;
+            try {
+                value = primitive.getAsDouble();
+            } catch (RuntimeException ex) {
+                return null;
+            }
+
+            if (!Double.isFinite(value)) {
+                return null;
+            }
+            return value;
+        }
+
+        private static boolean isValidIdentifier(String value) {
+            String normalized = value.trim().toLowerCase(Locale.ROOT);
+            if (normalized.length() > MAX_SERVER_ID_LENGTH) {
+                return false;
+            }
+            return normalized.matches("[a-z0-9._:/\\-]+") && !normalized.contains("//");
+        }
+
+        private static boolean isWithinBounds(double x, double y, double z) {
+            if (Math.abs(x) > MAX_ABS_COORDINATE || Math.abs(z) > MAX_ABS_COORDINATE) {
+                return false;
+            }
+            return y >= MIN_Y && y <= MAX_Y;
         }
     }
 }

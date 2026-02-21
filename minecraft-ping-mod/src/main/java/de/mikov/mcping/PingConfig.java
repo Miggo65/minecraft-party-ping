@@ -13,7 +13,7 @@ public class PingConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("mcping-client.json");
     private static final String DEFAULT_RELAY_URL = "ws://158.180.50.88:8787";
-    private static final int DEFAULT_PING_LIFETIME_SECONDS = 30;
+    private static final int DEFAULT_PING_LIFETIME_SECONDS = 10;
     private static final int DEFAULT_PING_COLOR_RGB = 0xE66D00;
     private static final float DEFAULT_PING_SCALE = 1.0f;
     private static final boolean DEFAULT_PLAYER_COLORS_ENABLED = false;

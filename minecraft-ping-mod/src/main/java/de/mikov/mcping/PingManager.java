@@ -42,11 +42,14 @@ public class PingManager {
         }
 
         if (sameSenderCount >= MAX_PINGS_PER_SENDER && oldestSameSenderIndex >= 0) {
-            pings.remove(oldestSameSenderIndex);
+            PingRecord removed = pings.remove(oldestSameSenderIndex);
+            XaeroCompatBridge.removePing(removed);
         }
 
         long expiresAt = System.currentTimeMillis() + config.pingLifetimeMs();
-        pings.add(new PingRecord(sender, pos, serverId, dimension, type, expiresAt));
+        PingRecord added = new PingRecord(sender, pos, serverId, dimension, type, expiresAt);
+        pings.add(added);
+        XaeroCompatBridge.upsertPing(added);
     }
 
     public synchronized List<PingRecord> activePings(long nowMs, String currentServerId, String currentDimension) {
@@ -66,6 +69,7 @@ public class PingManager {
         while (iterator.hasNext()) {
             PingRecord ping = iterator.next();
             if (ping.expired(nowMs)) {
+                XaeroCompatBridge.removePing(ping);
                 iterator.remove();
             }
         }
