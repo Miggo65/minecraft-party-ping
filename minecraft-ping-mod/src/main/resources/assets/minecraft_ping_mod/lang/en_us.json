@@ -3,7 +3,7 @@
   "category.mcping": "simpleMultiplayerPing",
   "key.mcping.ping": "Place Ping",
   "key.mcping.party": "Open Party Menu",
-  "mcping.settings.title": "Minecraft Ping Mod Settings",
+  "mcping.settings.title": "SimpleMultiplayerPing Settings",
   "mcping.settings.duration": "Ping Duration (seconds):",
   "mcping.settings.color": "Ping Color (hex, e.g. #E66D00):",
   "mcping.settings.save": "Save",

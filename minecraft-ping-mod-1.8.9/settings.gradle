@@ -1,0 +1,10 @@
+pluginManagement {
+    repositories {
+        maven { url = 'https://repo.legacyfabric.net/legacyfabric/' }
+        maven { url = 'https://maven.fabricmc.net/' }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'minecraft-ping-mod-1.8.9'

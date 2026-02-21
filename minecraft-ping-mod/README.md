@@ -27,7 +27,7 @@ The relay host can be self-hosted or you can use the public host for free.
 ## Requirements
 
 - Java 21
-- Fabric Loader + Fabric API (Minecraft 1.21.11)
+- Fabric Loader + Fabric API (Minecraft 1.21.x)
 - Optional but recommended: Mod Menu (for in-game settings)
 
 ## Build

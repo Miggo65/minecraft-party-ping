@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "minecraft_ping_mod_118x",
+  "version": "${version}",
+  "name": "SimpleMultiplayerPing (1.18.x)",
+  "icon": "assets/minecraft_ping_mod/icon.png",
+  "description": "SimpleMultiplayerPing variant for Fabric 1.18.x",
+  "authors": [
+    "mikov"
+  ],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "de.mikov.mcping.PingClientMod118"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.24",
+    "fabric-api": "*",
+    "minecraft": "~1.18.2",
+    "java": ">=17"
+  }
+}

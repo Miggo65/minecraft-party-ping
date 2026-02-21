@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "minecraft_ping_mod_legacy",
+  "version": "${version}",
+  "name": "SimpleMultiplayerPing (Legacy 1.8.9)",
+  "icon": "assets/minecraft_ping_mod/icon.png",
+  "description": "Legacy 1.8.9 module scaffold for multiplayer ping mod",
+  "authors": [
+    "mikov"
+  ],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "de.mikov.mcping.PingClientModLegacy"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "minecraft": "1.8.9",
+    "java": ">=8"
+  }
+}

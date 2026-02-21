@@ -2,7 +2,8 @@
   "schemaVersion": 1,
   "id": "minecraft_ping_mod",
   "version": "${version}",
-  "name": "Minecraft Ping Mod",
+  "name": "SimpleMultiplayerPing",
+  "icon": "assets/minecraft_ping_mod/icon.png",
   "description": "Client-side party ping markers with relay server sync",
   "authors": [
     "mikov"
@@ -25,7 +26,7 @@
     "fabric-key-binding-api-v1": "*",
     "fabric-lifecycle-events-v1": "*",
     "fabric-rendering-v1": "*",
-    "minecraft": "~1.21.11",
+    "minecraft": ">=1.21 <1.22",
     "java": ">=21"
   },
   "suggests": {
