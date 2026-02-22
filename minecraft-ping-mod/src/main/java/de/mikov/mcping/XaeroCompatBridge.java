@@ -28,7 +28,6 @@ public final class XaeroCompatBridge {
     private static volatile Method waypointSetRemoveMethod;
     private static volatile Constructor<?> waypointCtor;
     private static volatile Method waypointColorValueOfMethod;
-    private static volatile Method waypointSetChangedMethod;
     private static volatile Method waypointSetTemporaryMethod;
     private static volatile Method waypointVisibilityValueOfMethod;
     private static volatile Method waypointSetVisibilityMethod;
@@ -159,8 +158,7 @@ public final class XaeroCompatBridge {
                 return null;
             }
 
-            Object waypointSession = invokeNoArg(minimapSession, "getWaypointSession");
-            return new WaypointContext(waypointSet, waypointSession);
+            return new WaypointContext(waypointSet);
         } catch (Throwable ex) {
             LOGGER.debug("Failed to resolve Xaero waypoint context: {}", ex.getMessage());
             return null;
@@ -223,14 +221,6 @@ public final class XaeroCompatBridge {
                 waypointGetZMethod = waypointClass.getMethod("getZ");
                 waypointSetGetWaypointsMethod = waypointSetClass.getMethod("getWaypoints");
 
-                if (context.waypointSession() != null) {
-                    try {
-                        waypointSetChangedMethod = context.waypointSession().getClass().getMethod("setSetChangedTime", long.class);
-                    } catch (NoSuchMethodException ignored) {
-                        waypointSetChangedMethod = null;
-                    }
-                }
-
                 if (waypointSetAddMethod == null || waypointSetRemoveMethod == null) {
                     LOGGER.warn("Xaero waypoint hooks unresolved: add/remove methods not found on {}", waypointSetClass.getName());
                     return false;
@@ -289,7 +279,6 @@ public final class XaeroCompatBridge {
         try {
             waypointSetAddMethod.invoke(context.waypointSet(), waypoint);
             removeOverlappingDefaultWaypoints(context, waypoint);
-            touchSetChanged(context);
             return true;
         } catch (IllegalAccessException | InvocationTargetException ex) {
             LOGGER.debug("Failed to add Xaero waypoint: {}", ex.getMessage());
@@ -330,20 +319,8 @@ public final class XaeroCompatBridge {
     private static void removeWaypoint(WaypointContext context, Object waypoint) {
         try {
             waypointSetRemoveMethod.invoke(context.waypointSet(), waypoint);
-            touchSetChanged(context);
         } catch (IllegalAccessException | InvocationTargetException ex) {
             LOGGER.debug("Failed to remove Xaero waypoint: {}", ex.getMessage());
-        }
-    }
-
-    private static void touchSetChanged(WaypointContext context) {
-        if (context.waypointSession() == null || waypointSetChangedMethod == null) {
-            return;
-        }
-
-        try {
-            waypointSetChangedMethod.invoke(context.waypointSession(), System.currentTimeMillis());
-        } catch (IllegalAccessException | InvocationTargetException ignored) {
         }
     }
 
@@ -385,6 +362,6 @@ public final class XaeroCompatBridge {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
-    private record WaypointContext(Object waypointSet, Object waypointSession) {
+    private record WaypointContext(Object waypointSet) {
     }
 }
