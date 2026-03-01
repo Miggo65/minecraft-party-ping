@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "package": "de.mikov.mcping.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "CrosshairGrayscaleMixin",
+    "XaeroTemporaryWaypointFunctionMixin",
+    "XaeroWaypointWorldRenderReaderMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
