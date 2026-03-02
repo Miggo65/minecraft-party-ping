@@ -24,7 +24,7 @@ The relay host can be self-hosted or you can use the public host for free.
 	- Relay host override
 	- Reset to defaults
 
-Ping-Icons werden zur Laufzeit in Java gezeichnet (siehe `PingRenderUtil`), nicht als separate Ping-Texturdateien geladen.
+Ping icons are rendered at runtime in Java (see `PingRenderUtil`), not loaded from separate ping texture files.
 
 ## Requirements
 
